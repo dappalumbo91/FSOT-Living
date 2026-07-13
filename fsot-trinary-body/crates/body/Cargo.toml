@@ -1,0 +1,13 @@
+[package]
+name = "body"
+version = "0.1.0"
+edition = "2021"
+description = "FSOT body layers: interoception, Mind ABI, organ membrane (no_std)"
+
+[dependencies]
+trinary = { path = "../trinary" }
+genetic = { path = "../genetic" }
+libm = "0.2"
+
+[features]
+default = []

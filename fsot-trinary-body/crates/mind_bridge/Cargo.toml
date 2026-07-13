@@ -1,0 +1,12 @@
+[package]
+name = "mind_bridge"
+version = "0.1.0"
+edition = "2021"
+description = "File-based Mind ABI bridge between body soma and living-fsot habitat"
+
+[[bin]]
+name = "mind_bridge"
+path = "src/main.rs"
+
+[dependencies]
+body = { path = "../body" }

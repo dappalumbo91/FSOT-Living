@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/trinary",
+    "crates/genetic",
+    "crates/body",
+    "crates/kernel",
+    "crates/host_probe",
+    "crates/mind_bridge",
+    "boot",
+]
+
+# FSOT Trinary Body — ground-up companion OS.
+# Living mind gym remains at ../fsot-living-rust.
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1

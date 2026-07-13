@@ -1,0 +1,19 @@
+# FSOT Living — Python helpers only
+# Core intelligence is Rust (see fsot-living-rust/Cargo.toml).
+# Install: pip install -r requirements.txt
+#
+# System prerequisites (not pip):
+#   - Rust toolchain (rustup) for cargo build
+#   - Python 3.10+
+#   - Optional: Node.js for JS organ tools
+#   - Optional: QEMU for trinary body UEFI path
+
+# Desktop visualization + status polling
+flask>=3.0.0
+requests>=2.31.0
+
+# Knowledge pack / corpus tools
+numpy>=1.24.0
+
+# Image priors (if scripting outside Rust image crate)
+Pillow>=10.0.0

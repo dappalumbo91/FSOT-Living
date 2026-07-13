@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FSOT Autonomous Habitat</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121a22;
+      --border: #1e2a36;
+      --text: #e8f0f7;
+      --muted: #8aa0b5;
+      --emerge: #3dffa8;
+      --damp: #ff6b8a;
+      --accent: #c4a1ff;
+      --warn: #ffc857;
+      --good: #5eead4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #152033 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 14, 20, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+    header .sub { color: var(--muted); font-size: 0.8rem; }
+    .badge {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .badge.live { border-color: var(--emerge); color: var(--emerge); }
+    .badge.auto { border-color: var(--accent); color: var(--accent); }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 0.95fr;
+      gap: 14px;
+      padding: 14px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    #stage-wrap { grid-column: 1; grid-row: 1 / span 2; }
+    canvas {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      background: #070b10;
+      border: 1px solid var(--border);
+    }
+    .meters { display: grid; gap: 8px; }
+    .meter label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .bar {
+      height: 8px;
+      background: #0a1018;
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      transition: width 0.15s ease;
+    }
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+    .stat {
+      background: #0c1219;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .stat b { display: block; color: var(--muted); font-weight: 500; font-size: 0.68rem; }
+    .log {
+      max-height: 240px;
+      overflow: auto;
+      font-size: 0.72rem;
+      font-family: ui-monospace, Consolas, monospace;
+      color: var(--muted);
+    }
+    .log div { padding: 3px 0; border-bottom: 1px solid #15202b; }
+    .pack-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #15202b;
+      font-size: 0.78rem;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .genome {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.66rem;
+      color: var(--accent);
+      word-break: break-all;
+    }
+    .aa { color: var(--good); font-family: ui-monospace, Consolas, monospace; font-size: 0.8rem; }
+    .env-laws {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding: 8px 14px 18px;
+    }
+  </style>
+</head>
+<body>
+  <div id="connBanner" style="display:none;background:#3a1520;color:#ffb3c1;padding:10px 16px;font-size:0.85rem;border-bottom:1px solid #5a2030"></div>
+  <header>
+    <div>
+      <h1>FSOT Autonomous Habitat</h1>
+      <div class="sub">Must use URL <b id="urlHint">http://127.0.0.1:3847</b> (not a file:// path) · env.json laws</div>
+    </div>
+    <span class="badge auto">AUTONOMOUS</span>
+    <span id="runBadge" class="badge live">LIVE</span>
+    <span id="tickBadge" class="badge">t=0</span>
+    <span id="genBadge" class="badge">gen 0</span>
+    <span id="riverBadge" class="badge">river —</span>
+  </header>
+
+  <div class="layout">
+    <div class="panel" id="stage-wrap">
+      <h2>Habitat</h2>
+      <canvas id="stage" width="720" height="520"></canvas>
+    </div>
+
+    <div class="panel">
+      <h2>Vital signs (champion)</h2>
+      <div class="meters" id="meters"></div>
+      <div class="grid2" style="margin-top:12px" id="stats"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Environment laws</h2>
+      <div class="env-laws" id="laws"></div>
+      <h2 style="margin-top:14px">Identity</h2>
+      <div id="identity"></div>
+      <div class="aa" id="aa" style="margin-top:8px"></div>
+      <div class="genome" id="genome" style="margin-top:6px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Population</h2>
+      <div id="pack"></div>
+      <h2 style="margin-top:12px">Lineage</h2>
+      <div class="log" id="lineage" style="max-height:120px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Habitat log</h2>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="panel" style="grid-column: 1 / -1">
+      <h2>Query console — probe the mind (does not control evolution)</h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px">
+        <input id="queryInput" type="text" placeholder='Ask: status · codon ATG · domain quantum · genome · "what is emergence"…'
+          style="flex:1; min-width:240px; background:#0c1219; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:10px 12px; font-size:0.9rem" />
+        <button id="queryBtn" style="background:#1a2740; border:1px solid #3d5a80; color:var(--text); border-radius:8px; padding:10px 16px; cursor:pointer">Ask champion</button>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px">
+        <button class="qchip" data-q="status">status</button>
+        <button class="qchip" data-q="codon ATG">codon ATG</button>
+        <button class="qchip" data-q="domain quantum">domain quantum</button>
+        <button class="qchip" data-q="domain cosmological">domain cosmological</button>
+        <button class="qchip" data-q="genome">genome</button>
+        <button class="qchip" data-q="FSOT scalar term1">FSOT term1</button>
+      </div>
+      <div id="queryOut" class="log" style="max-height:180px; white-space:pre-wrap; color:var(--good); font-size:0.8rem"></div>
+    </div>
+  </div>
+
+  <footer>
+    Life is autonomous (env.json) · Query console is a development probe only · data river: Genetics / PublicData / Lean
+  </footer>
+  <style>
+    .qchip {
+      background: #0c1219; border: 1px solid var(--border); color: var(--muted);
+      border-radius: 999px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer;
+    }
+    .qchip:hover { border-color: var(--accent); color: var(--text); }
+  </style>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const canvas = $('stage');
+    const ctx = canvas.getContext('2d');
+    let state = null;
+    let particles = [];
+
+    function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+    function regimeColor(r) {
+      if (r === 'emergence') return '#3dffa8';
+      if (r === 'damping') return '#ff6b8a';
+      return '#7ec8ff';
+    }
+    function meter(label, value, color, fmt) {
+      const pct = clamp(value, 0, 1) * 100;
+      return `<div class="meter"><label><span>${label}</span><span>${fmt}</span></label>
+        <div class="bar"><i style="width:${pct}%;background:${color}"></i></div></div>`;
+    }
+
+    function drawCreature(h, t) {
+      const w = canvas.width, ht = canvas.height;
+      ctx.clearRect(0, 0, w, ht);
+      ctx.fillStyle = '#070b10';
+      ctx.fillRect(0, 0, w, ht);
+
+      const rc = regimeColor(h.regime);
+      const g = ctx.createRadialGradient(w * 0.5, ht * 0.45, 20, w * 0.5, ht * 0.5, w * 0.55);
+      g.addColorStop(0, h.regime === 'emergence' ? 'rgba(61,255,168,0.12)' : h.regime === 'damping' ? 'rgba(255,107,138,0.10)' : 'rgba(126,200,255,0.10)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, ht);
+
+      ctx.strokeStyle = 'rgba(40,60,80,0.35)';
+      for (let x = 40; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ht); ctx.stroke(); }
+      for (let y = 40; y < ht; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      const cx = w * 0.5, cy = ht * 0.48;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(94,234,212,0.15)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const pr = 70 + h.pressure * 80;
+      ctx.beginPath();
+      ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,200,87,${0.15 + h.pressure * 0.25})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      const bodyR = 28 + Math.abs(h.S) * 22 + h.coherence * 10;
+      const pulse = 1 + Math.sin(t / 200) * 0.04 * (0.5 + h.coherence);
+      const R = bodyR * pulse;
+      const grd = ctx.createRadialGradient(cx - R * 0.2, cy - R * 0.2, R * 0.1, cx, cy, R);
+      grd.addColorStop(0, rc + 'cc');
+      grd.addColorStop(0.55, rc + '55');
+      grd.addColorStop(1, 'rgba(10,16,24,0.2)');
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.strokeStyle = rc;
+      ctx.lineWidth = 2 + h.coherence * 2;
+      ctx.stroke();
+
+      const nx = cx + Math.cos(t / 500) * R * 0.18;
+      const ny = cy + Math.sin(t / 400) * R * 0.15;
+      ctx.beginPath();
+      ctx.arc(nx, ny, 8 + (h.observed ? 4 : 0), 0, Math.PI * 2);
+      ctx.fillStyle = h.observed ? '#fff' : '#c4a1ff';
+      ctx.fill();
+
+      Object.entries(h.domains || {}).forEach(([, val], i, arr) => {
+        const ang = (i / arr.length) * Math.PI * 2 + t / 2000;
+        const rad = R + 18 + val * 14;
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad, 3 + val * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(196,161,255,${0.35 + val * 0.4})`;
+        ctx.fill();
+      });
+
+      if (particles.length < 40 && Math.random() < 0.3 + (h.intelligence || 0) * 0.2) {
+        particles.push({ x: cx, y: cy, vx: (Math.random() - 0.5) * 2.5, vy: (Math.random() - 0.5) * 2.5, life: 1, c: rc });
+      }
+      particles = particles.filter((p) => p.life > 0);
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.c;
+        ctx.fillRect(p.x, p.y, 2, 2);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = '#e8f0f7';
+      ctx.font = '600 16px Segoe UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(h.id, cx, 36);
+      ctx.font = '13px Segoe UI, sans-serif';
+      ctx.fillStyle = rc;
+      ctx.fillText(`${h.regime.toUpperCase()}  ·  S=${h.S.toFixed(4)}  ·  fit=${(h.fitness || 0).toFixed(2)}`, cx, 56);
+      ctx.fillStyle = '#8aa0b5';
+      ctx.font = '12px Segoe UI, sans-serif';
+      ctx.fillText(
+        `D_eff=${h.D_eff.toFixed(2)}  δψ=${h.delta_psi.toFixed(3)}  mem=${h.memSize}  codons=${h.codonKnown}`,
+        cx, ht - 28
+      );
+      if (state?.lastBattery) {
+        ctx.fillStyle = '#5eead4';
+        ctx.fillText(
+          `exam ${(state.lastBattery.accuracy * 100).toFixed(1)}%  intel ${state.lastBattery.intelligenceScore.toFixed(2)}`,
+          cx, ht - 12
+        );
+      }
+    }
+
+    function render() {
+      if (!state) return;
+      const h = state.hero;
+      $('runBadge').textContent = state.running ? 'LIVE' : 'ENDED';
+      $('tickBadge').textContent = `t=${state.worldTick}`;
+      $('genBadge').textContent = `gen ${state.generation}`;
+      $('riverBadge').textContent = `river ${state.river?.position || 0}/${state.river?.size || 0}`;
+
+      const sNorm = clamp((h.S + 1) / 2, 0, 1);
+      $('meters').innerHTML =
+        meter('Scalar S', sNorm, regimeColor(h.regime), h.S.toFixed(4)) +
+        meter('Coherence', h.coherence, '#7ec8ff', h.coherence.toFixed(3)) +
+        meter('Pressure', clamp(h.pressure, 0, 1), '#ffc857', h.pressure.toFixed(3)) +
+        meter('Cognitive', clamp(h.cognitive, 0, 1), '#5eead4', (h.cognitive * 100).toFixed(1) + '%') +
+        meter('Intelligence', clamp(h.intelligence / 2.2, 0, 1), '#e9d5ff', h.intelligence.toFixed(3)) +
+        meter('Fitness', clamp((h.fitness || 0) / 6, 0, 1), '#c4a1ff', (h.fitness || 0).toFixed(3));
+
+      $('stats').innerHTML = `
+        <div class="stat"><b>Bio target S</b><span>${state.bioTargetS.toFixed(4)}</span></div>
+        <div class="stat"><b>Fed / Exams / Births</b><span>${state.stats.fed} / ${state.stats.exams} / ${state.stats.births}</span></div>
+        <div class="stat"><b>Autosaves / Gens</b><span>${state.stats.autosaves} / ${state.stats.generations}</span></div>
+        <div class="stat"><b>Files mined</b><span>${state.river?.filesMined ?? 0}</span></div>
+      `;
+
+      const e = state.env || {};
+      $('laws').innerHTML = `
+        tick ${e.tickMs}ms · feed every ${e.feedIntervalTicks} · exam every ${e.examIntervalTicks}<br/>
+        generation every ${e.generationIntervalTicks} · save every ${e.saveIntervalTicks}<br/>
+        stress ±${e.stressAmplitude} · pop ${e.population}<br/>
+        <span style="color:#5eead4">You only edit env.json — then watch.</span>
+      `;
+
+      $('identity').innerHTML = `
+        <div class="stat"><b>Champion</b><span>${h.id}</span></div>
+        <div class="stat" style="margin-top:6px"><b>Structures</b><span>mod ${h.policySizes.mod} · sig ${h.policySizes.signal} · dom ${h.policySizes.domain} · recall ${h.policySizes.recall}</span></div>
+      `;
+      $('aa').textContent = 'AA: ' + (h.aaChain || '—');
+      $('genome').textContent = h.genome || '—';
+
+      $('pack').innerHTML = (state.pack || []).map((p, i) => `
+        <div class="pack-row">
+          <span class="dot" style="background:${regimeColor(p.regime)}"></span>
+          <span style="flex:1">${i === 0 ? '★ ' : ''}${p.id}</span>
+          <span style="color:${regimeColor(p.regime)}">${p.S.toFixed(3)}</span>
+          <span style="color:var(--good)">${(p.cognitive * 100).toFixed(0)}%</span>
+          <span style="color:var(--accent)">${(p.fitness || 0).toFixed(1)}</span>
+        </div>
+      `).join('');
+
+      $('lineage').innerHTML = (state.lineage || []).slice().reverse().map(L =>
+        `<div>g${L.gen} ${L.champion} S=${Number(L.S).toFixed(3)} acc=${(L.acc * 100).toFixed(0)}% fit=${Number(L.fit).toFixed(2)}</div>`
+      ).join('') || '<div>awaiting first generation…</div>';
+
+      $('log').innerHTML = (state.events || []).map(ev =>
+        `<div>[t${ev.t}] ${ev.msg}</div>`
+      ).join('');
+    }
+
+    // If HTML is opened as file://, relative /api/* fails forever — point at the habitat host.
+    const API_BASE =
+      location.protocol === 'file:' || location.port === ''
+        ? 'http://127.0.0.1:3847'
+        : '';
+
+    async function poll() {
+      try {
+        const r = await fetch(API_BASE + '/api/state', { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        state = await r.json();
+        render();
+        const banner = document.getElementById('connBanner');
+        if (banner) banner.style.display = 'none';
+      } catch (e) {
+        const msg =
+          'Waiting for habitat server at http://127.0.0.1:3847 … ' +
+          '(Do not open the HTML file directly — run npm run habitat or open that URL. ' +
+          'Error: ' +
+          (e.message || e) +
+          ')';
+        $('log').innerHTML = '<div style="color:#ff6b8a">' + msg + '</div>';
+        const banner = document.getElementById('connBanner');
+        if (banner) {
+          banner.style.display = 'block';
+          banner.textContent = msg;
+        }
+      }
+    }
+
+    async function ask(q) {
+      const query = (q || $('queryInput').value || '').trim();
+      if (!query) return;
+      $('queryOut').textContent = '…';
+      try {
+        const r = await fetch(API_BASE + '/api/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q: query }),
+        });
+        const j = await r.json();
+        $('queryOut').textContent =
+          `[${j.organismId || '?'} · ${j.kind || ''} · t${j.tick || '?'}]\n` +
+          (j.answer || j.error || JSON.stringify(j, null, 2));
+      } catch (e) {
+        $('queryOut').textContent =
+          'Query failed: ' + e.message + ' — is the habitat running at http://127.0.0.1:3847 ?';
+      }
+    }
+    $('queryBtn').onclick = () => ask();
+    $('queryInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') ask();
+    });
+    document.querySelectorAll('.qchip').forEach((b) => {
+      b.onclick = () => {
+        $('queryInput').value = b.dataset.q;
+        ask(b.dataset.q);
+      };
+    });
+
+    setInterval(poll, 250);
+    poll();
+    function loop() {
+      if (state?.hero) drawCreature(state.hero, performance.now());
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

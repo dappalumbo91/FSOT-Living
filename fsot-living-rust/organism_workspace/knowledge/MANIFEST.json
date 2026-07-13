@@ -1,0 +1,26 @@
+{
+  "total_cards": 14646,
+  "packs": {
+    "arxiv_sample.jsonl": 2000,
+    "arxiv_fsot_core.jsonl": 3000,
+    "fsot_neurolab.jsonl": 100,
+    "fsot_linguistics_docs.jsonl": 40,
+    "fsot_micro_qa.jsonl": 170,
+    "linguistics_en_sample.jsonl": 35,
+    "genetics_refs.jsonl": 1,
+    "d_train_gsm8k.jsonl": 2000,
+    "d_train_mmlu.jsonl": 2000,
+    "d_train_truthfulqa.jsonl": 800,
+    "d_train_dolly.jsonl": 2500,
+    "d_train_squad.jsonl": 1500,
+    "d_kb_formulas.jsonl": 0,
+    "d_bench_mbpp.jsonl": 500
+  },
+  "notes": [
+    "PRIMARY corpus root: D:\\training data (MMLU, GSM8K, SQuAD, Dolly, HellaSwag, arXiv, genome, ...)",
+    "Also: D:\\FSOT_Benchmarks, D:\\Knowledge base\\export, D:\\FSOT NeuroLab/linguistics",
+    "G:\\AI_Datasets mostly empty zips \u2014 not primary",
+    "Model weights on D:\\Large language models originals (gguf) are NOT FactCards",
+    "Restart living TUI to load new jsonl packs into knowledge organ"
+  ]
+}

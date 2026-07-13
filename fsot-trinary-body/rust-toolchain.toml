@@ -1,0 +1,6 @@
+[toolchain]
+# bootloader 0.11.15 era — works with edition2024 deps and pre-Step-break nightlies.
+# Avoid floating `nightly` (2026-07+ breaks x86_64 Step in boot stages).
+channel = "nightly-2026-02-01"
+components = ["rust-src", "rustfmt", "clippy", "llvm-tools-preview"]
+targets = ["x86_64-unknown-none"]

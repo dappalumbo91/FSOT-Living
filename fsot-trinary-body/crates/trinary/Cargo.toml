@@ -1,0 +1,12 @@
+[package]
+name = "trinary"
+version = "0.1.0"
+edition = "2021"
+description = "FSOT balanced-ternary primitives: Trit, Word27, gates, collapse"
+
+[dependencies]
+libm = "0.2"
+
+[features]
+default = []
+std = []

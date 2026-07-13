@@ -1,0 +1,62 @@
+# ── Build artifacts ──
+**/target/
+**/target_bridge/
+**/*.pdb
+**/*.exe
+!**/scripts/**
+
+# ── Runtime / live state (not source) ──
+state/
+**/state/
+**/habitat-rust/
+*.log
+
+# ── Organism workspace ephemera ──
+fsot-living-rust/organism_workspace/scratch/
+fsot-living-rust/organism_workspace/practice/
+fsot-living-rust/organism_workspace/proposals/
+fsot-living-rust/organism_workspace/video_scratch/
+fsot-living-rust/organism_workspace/**/__pycache__/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+
+# ── Node / Python envs ──
+node_modules/
+.venv/
+venv/
+env/
+*.egg-info/
+
+# ── OS / IDE ──
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# ── Secrets / local overrides ──
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# ── Large / generated dumps ──
+**/*.img
+**/body_image/
+fsot-living-v29*.json
+**/probe_*.txt
+**/probe_*.err
+**/CAPABILITY_AUDIT.json
+**/ACCURACY_AUDIT.json
+**/LIVE_STATUS.json
+**/ACTIVITY.json
+**/activity.jsonl
+**/live_ticks.jsonl
+**/bench_transcript.jsonl
+
+# ── Cargo lock optional keep (we keep Cargo.lock for apps) ──
+# Cargo.lock kept for binary crates

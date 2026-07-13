@@ -1,0 +1,42 @@
+{
+  "name": "fsot-living-scalar-organism",
+  "version": "0.3.1",
+  "description": "FSOT-native evolving intelligence — scalar substrate, genetic guidance, cognitive task fitness",
+  "main": "fsot_living_scalar_v29.js",
+  "scripts": {
+    "start": "node fsot_living_scalar_v29.js",
+    "long": "node fsot_living_scalar_v29_longrun.js",
+    "long:bio": "node fsot_longrun_bio.js",
+    "compete": "node fsot_competition.js",
+    "compete:deep": "node fsot_competition.js 25 12 150",
+    "intel": "node fsot_intelligence_evolve.js",
+    "intel:deep": "node fsot_intelligence_evolve.js 24 12 80",
+    "live": "cargo run --release --manifest-path fsot-living-rust/Cargo.toml",
+    "rust": "cargo run --release --manifest-path fsot-living-rust/Cargo.toml",
+    "rust:probe": "cargo run --release --manifest-path fsot-living-rust/Cargo.toml --bin fsot-probe",
+    "rust:tasks": "cargo run --release --manifest-path fsot-living-rust/Cargo.toml --bin fsot-tasks",
+    "rust:check": "cargo test --manifest-path fsot-living-rust/Cargo.toml",
+    "viz:legacy-js": "node fsot_habitat_local.js",
+    "viz:server": "node fsot_viz_server.js",
+    "genetic:check": "node -e \"const g=require('./fsot_genetic_data'); const b=g.loadGeneticBundle(); console.log(b.loaded); console.log('genome', b.organism&&b.organism.sequence.join('-'));\"",
+    "scalar": "node -e \"const s=require('./fsot_scalar'); console.log(s.computeForDomain('quantum')); console.log(s.computeForDomain('cosmological')); console.log('k', s.CONSTANTS.k);\"",
+    "test": "node -e \"const s=require('./fsot_scalar'); const q=s.computeForDomain('quantum'); const c=s.computeForDomain('cosmological'); if(!(q.S>0)) process.exit(1); if(!(c.S<0)) process.exit(1); const g=require('./fsot_genetic_data').loadGeneticBundle(); if(!g.loaded.codons) process.exit(2); console.log('OK', {quantum:q.S, cosmological:c.S, codons:g.loaded.codons, aa:g.loaded.amino, genome:g.loaded.genome});\""
+  },
+  "keywords": [
+    "FSOT",
+    "structural-evolution",
+    "digital-organism",
+    "pressure-driven",
+    "artificial-life",
+    "self-modifying"
+  ],
+  "author": "Damian Arthur Palumbo",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dappalumbo91/fsot-living-scalar-organism.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+[package]
+name = "genetic"
+version = "0.1.0"
+edition = "2021"
+description = "Dynamic trinary genetic fabric — loci re-collapse; not static binary genes"
+
+[dependencies]
+trinary = { path = "../trinary" }
+libm = "0.2"
+
+[features]
+default = []
+std = []
