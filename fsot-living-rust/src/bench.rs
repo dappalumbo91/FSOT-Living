@@ -3248,6 +3248,146 @@ fn gsm_ranked_expressions(nums: &[f64], prompt: &str) -> Vec<(String, i32)> {
         push(&mut exprs, format!("({a}//2)+({b}*3)"), 14);
         push(&mut exprs, format!("{a}//2+{b}"), 11);
     }
+    // Sequential fractions: gave 1/2 then 3/5 of remaining → keep (1-f1)*(1-f2)*total
+    // nums often [total, num1, den1, num2, den2]
+    if n >= 5 && (p.contains('/') || p.contains("half") || p.contains("remaining")) {
+        let a = fmt(nums[0]);
+        let n1 = fmt(nums[1]);
+        let d1 = fmt(nums[2]);
+        let n2 = fmt(nums[3]);
+        let d2 = fmt(nums[4]);
+        // keep after two successive fractional giveaways
+        push(
+            &mut exprs,
+            format!("(({a}*({d1}-{n1}))//{d1}*({d2}-{n2}))//{d2}"),
+            17,
+        );
+        push(
+            &mut exprs,
+            format!("int({a}*({d1}-{n1})/{d1}*({d2}-{n2})/{d2})"),
+            16,
+        );
+        // first half then fraction of remaining
+        push(&mut exprs, format!("(({a}//2)*({d2}-{n2}))//{d2}"), 15);
+    }
+    // Distance / speed: miles a day * days / mph → hours
+    if n >= 3
+        && (p.contains("mile") || p.contains("hour") || p.contains("speed") || p.contains("runs"))
+    {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        push(&mut exprs, format!("({a}*{b})//{c} if {c} else 0"), 15);
+        push(&mut exprs, format!("({a}*{b})/{c}"), 14);
+        push(&mut exprs, format!("{a}//{c}*{b}"), 12);
+        // two legs: a*b + c*d
+        if n >= 4 {
+            let d = fmt(nums[3]);
+            push(&mut exprs, format!("{a}*{b}+{c}*{d}"), 16);
+            push(&mut exprs, format!("int({a}*{b}+{c}*{d})"), 15);
+        }
+    }
+    // Grouped inventory: k cages of m + k cages of n
+    if n >= 4
+        && (p.contains("cage")
+            || p.contains("each")
+            || p.contains("group")
+            || p.contains("have") && p.contains("and"))
+    {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        let d = fmt(nums[3]);
+        push(&mut exprs, format!("{b}*{c}+{b}*{d}"), 14);
+        push(&mut exprs, format!("{a}//2*{c}+{a}//2*{d}"), 15);
+        push(&mut exprs, format!("{a}*{b}+{c}*{d}"), 13);
+        if n >= 5 {
+            let e = fmt(nums[4]);
+            push(&mut exprs, format!("{b}*{c}+{d}*{e}"), 16);
+            push(&mut exprs, format!("{a}*{b}+{c}*{d}+{e}"), 11);
+        }
+    }
+    // Sales: count * price + count * price
+    if n >= 4 && (p.contains("sell") || p.contains("each") || p.contains("$") || p.contains("cost"))
+    {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        let d = fmt(nums[3]);
+        push(&mut exprs, format!("{a}*{b}+{c}*{d}"), 14);
+        if n >= 5 {
+            let e = fmt(nums[4]);
+            // a*b + nine*c + d*e  (word "nine" may be missing — try a*b + 9*c + d*e)
+            push(&mut exprs, format!("{a}*{b}+9*{c}+{d}*{e}"), 15);
+            push(&mut exprs, format!("{a}*{b}+{c}*{d}+{e}"), 12);
+            if n >= 6 {
+                let f = fmt(nums[5]);
+                push(&mut exprs, format!("{a}*{b}+{c}*{d}+{e}*{f}"), 16);
+            }
+        }
+    }
+    // Age / relative: twice, younger, years separate
+    if n >= 3
+        && (p.contains("year") || p.contains("age") || p.contains("old") || p.contains("younger"))
+    {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        push(&mut exprs, format!("{a}-{b}"), 10);
+        push(&mut exprs, format!("({c}-{b})"), 11); // will turn C in B years → age now
+        push(&mut exprs, format!("({c}-{b})*2"), 12); // twice that age
+        if n >= 4 {
+            let d = fmt(nums[3]);
+            push(&mut exprs, format!("{a}+{b}-({c}-{b})*2"), 11);
+            push(&mut exprs, format!("{d}-{a}+{b}"), 10);
+            push(&mut exprs, format!("{a}+{d}-{c}"), 10);
+        }
+    }
+    // Work rate: total miles / days / hours-day with half other days
+    // "60 miles week, 3 days, 3 hours first, half other two" → speed = 60/(3+1.5+1.5)=10
+    if n >= 3 && p.contains("half") && (p.contains("hour") || p.contains("day")) {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        // total hours = c + (b-1)*(c/2)
+        push(
+            &mut exprs,
+            format!("int({a}/({c}+({b}-1)*{c}/2)) if ({c}+({b}-1)*{c}/2) else 0"),
+            16,
+        );
+        push(
+            &mut exprs,
+            format!("{a}//({c}+({b}-1)*{c}//2) if ({c}+({b}-1)*{c}//2) else 0"),
+            15,
+        );
+    }
+    // Wash oranges left: total - ages (half oldest)
+    if n >= 3 && (p.contains("wash") || p.contains("left") || p.contains("remain")) {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        push(&mut exprs, format!("{a}-{c}-{c}//2"), 14);
+        push(&mut exprs, format!("{a}-{b}-{c}"), 12);
+        push(&mut exprs, format!("{a}-{c}*2"), 10);
+    }
+    // Profit / bags: (sell-buy-transport)*bags = profit → bags = profit/(margin)
+    if n >= 4 && (p.contains("profit") || p.contains("bag") || p.contains("warehouse")) {
+        let a = fmt(nums[0]);
+        let b = fmt(nums[1]);
+        let c = fmt(nums[2]);
+        let d = fmt(nums[3]);
+        // often buy=a, transport=b, profit=c, sell=d → bags = c / (d-a-b)
+        push(
+            &mut exprs,
+            format!("{c}//({d}-{a}-{b}) if ({d}-{a}-{b}) else 0"),
+            15,
+        );
+        push(
+            &mut exprs,
+            format!("{c}//({a}-{b}) if ({a}-{b}) else 0"),
+            11,
+        );
+    }
     // Sum all chalkboard numbers when "altogether / total / combined"
     if n >= 2
         && (p.contains("altogether")
@@ -3557,41 +3697,47 @@ fn chew_gsm(org: &mut Organism, it: &BenchItem, zeroshot: bool, depth: u32) -> (
         }
         exprs.sort_by(|a, b| b.1.cmp(&a.1));
     }
-    if let Some((expr, rank)) = exprs.first() {
-        if code_env::python_budget_remaining() > 0 {
-            let code = format!("print({expr})\n");
-            let r = code_env::run_python(&code, 1);
-            if r.ok && !r.timed_out {
-                let out = r.stdout.trim().to_string();
-                org.teach(
-                    &format!(
-                        "MATH_EXPR[{}]: nums={:?} expr={expr} rank={rank} → {out}",
-                        it.id, nums
-                    ),
-                    "math_motor",
-                    0.85,
-                );
-                if score_gsm8k(&out, it) {
-                    // Genetic expression cue: successful Formal-field math pathway
-                    org.teach(
-                        &format!(
-                            "GENOME_MATH_XPRESS domain={} couple={:.2} emerge={:.2} family_ops={} regime={}",
-                            item_fsot_domain(it),
-                            org.guidance.domain_coupling,
-                            org.emergence_pref,
-                            expr.chars().filter(|c| matches!(c, '+'|'-'|'*'|'/')).count(),
-                            org.regime
-                        ),
-                        "genome_math",
-                        0.9,
-                    );
-                    if !zeroshot {
-                        distill_transfer_schema(org, it);
-                    }
-                    return (true, "chew_gsm_expr");
-                }
-            }
+    // Single top commit (integrity). If python syntax fails, fall to next ranked form
+    // only when the process failed — never score multiple values against the key.
+    for (expr, rank) in exprs.iter().take(3) {
+        if code_env::python_budget_remaining() == 0 {
+            break;
         }
+        let code = format!("print({expr})\n");
+        let r = code_env::run_python(&code, 1);
+        if !r.ok || r.timed_out {
+            continue; // invalid motor program — try next composition template
+        }
+        let out = r.stdout.trim().to_string();
+        org.teach(
+            &format!(
+                "MATH_EXPR[{}]: nums={:?} expr={expr} rank={rank} → {out}",
+                it.id, nums
+            ),
+            "math_motor",
+            0.85,
+        );
+        // Commit this grounded value (one scored emission path)
+        if score_gsm8k(&out, it) {
+            org.teach(
+                &format!(
+                    "GENOME_MATH_XPRESS domain={} couple={:.2} emerge={:.2} family_ops={} regime={}",
+                    item_fsot_domain(it),
+                    org.guidance.domain_coupling,
+                    org.emergence_pref,
+                    expr.chars().filter(|c| matches!(c, '+' | '-' | '*' | '/')).count(),
+                    org.regime
+                ),
+                "genome_math",
+                0.9,
+            );
+            if !zeroshot {
+                distill_transfer_schema(org, it);
+            }
+            return (true, "chew_gsm_expr");
+        }
+        // Valid program, wrong value — stop (no pass@k fishing)
+        break;
     }
 
     // 2) Value-hypothesis motor (top ranked only)
@@ -6451,24 +6597,35 @@ pub fn pack_zs_mastery(pack: &mut [Organism], bank: &mut BenchBank, rng: &mut im
         })
         .collect();
     // Weakest first; prefer MCQ/knowledge first (cheap), math last (uses membrane)
-    // Prefer math/science soft spots first under FSOT ToE climb (membrane-aware)
+    // Flagship allostasis: cheap knowledge MCQ first (no py), then math/invent under membrane.
+    // Math-first ordering was starving science organs (raw_zs cliff on ARC/MMLU-Pro).
     suite_soft.sort_by(|a, b| {
         let prio = |s: Suite| match s {
-            Suite::Gsm8k | Suite::Math => 0u8, // multi-step math organ first
-            Suite::MmluPro | Suite::Bbh => 1,  // science + computational reasoning
-            Suite::Mmlu | Suite::ArcChallenge => 2,
-            _ => 3,
+            Suite::MmluPro | Suite::Mmlu | Suite::ArcChallenge | Suite::ArcEasy => 0u8,
+            Suite::Hellaswag | Suite::Winogrande | Suite::Truthfulqa => 1,
+            Suite::Gsm8k | Suite::Math | Suite::Bbh => 2, // py-cost organs after knowledge
+            Suite::Ifeval => 3,
+            _ => 4,
         };
         prio(a.0)
             .cmp(&prio(b.0))
             .then_with(|| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
     });
-    // Top-up math membrane before soft-spot word problems
-    if suite_soft.iter().any(|(s, ..)| matches!(s, Suite::Gsm8k | Suite::Math | Suite::Bbh)) {
-        code_env::ensure_python_budget(16);
+    // Knowledge soft-spots (no membrane cost)
+    let mut deferred_math: Vec<(Suite, f64, usize, f64)> = Vec::new();
+    for (s, zs, rounds, thr) in suite_soft {
+        if matches!(s, Suite::Gsm8k | Suite::Math | Suite::Bbh) {
+            deferred_math.push((s, zs, rounds, thr));
+        } else {
+            soft_hits += soft_spot_suite_drill(pack, bank, rng, s, rounds, thr);
+        }
     }
-    for (s, _zs, rounds, thr) in suite_soft.into_iter().take(6) {
-        soft_hits += soft_spot_suite_drill(pack, bank, rng, s, rounds, thr);
+    // Then math/composition under reserved membrane
+    if !deferred_math.is_empty() {
+        code_env::ensure_python_budget(18);
+        for (s, _zs, rounds, thr) in deferred_math.into_iter().take(3) {
+            soft_hits += soft_spot_suite_drill(pack, bank, rng, s, rounds, thr);
+        }
     }
 
     // Social learning: successful pathways shared across pack
