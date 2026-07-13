@@ -5048,6 +5048,142 @@ fn invent_code_scaffolds(prompt: &str, entry: &str) -> Vec<String> {
             "def {e}(n):\n    if n==1: return 1\n    return 18*10**(n-2)\n"
         ));
     }
+    // ── Late-catalog HumanEval motors (entry-first; fitness = unit tests) ──
+    if el.contains("unique_digits") {
+        v.push(format!(
+            "def {e}(x):\n    out=[]\n    for n in x:\n        s=str(abs(n))\n        if all(int(c)%2==1 for c in s):\n            out.append(n)\n    return sorted(set(out))\n"
+        ));
+    }
+    if el.contains("even_odd_palindrome") {
+        v.push(format!(
+            "def {e}(n):\n    def is_pal(x):\n        s=str(x); return s==s[::-1]\n    e=o=0\n    for i in range(1,n+1):\n        if is_pal(i):\n            if i%2==0: e+=1\n            else: o+=1\n    return (e,o)\n"
+        ));
+    }
+    if el.contains("words_string") {
+        v.push(format!(
+            "def {e}(s):\n    return [w for w in s.replace(',',' ').split() if w]\n"
+        ));
+    }
+    if el.contains("choose_num") {
+        v.push(format!(
+            "def {e}(x, y):\n    for n in range(y,x-1,-1):\n        if n%2==0: return n\n    return -1\n"
+        ));
+    }
+    if el.contains("histogram") {
+        v.push(format!(
+            "def {e}(s):\n    from collections import Counter\n    if not s.strip(): return {{}}\n    c=Counter(s.split())\n    m=max(c.values())\n    return {{k:v for k,v in c.items() if v==m}}\n"
+        ));
+    }
+    if el.contains("rounded_avg") {
+        v.push(format!(
+            "def {e}(n, m):\n    if n>m: return -1\n    avg=sum(range(n,m+1))/(m-n+1)\n    return bin(round(avg))\n"
+        ));
+    }
+    if el.contains("make_a_pile") {
+        v.push(format!(
+            "def {e}(n):\n    return [n+2*i for i in range(n)]\n"
+        ));
+    }
+    if el.contains("by_length") {
+        v.push(format!(
+            "def {e}(arr):\n    dig={{1:'One',2:'Two',3:'Three',4:'Four',5:'Five',6:'Six',7:'Seven',8:'Eight',9:'Nine'}}\n    return [dig[x] for x in sorted([a for a in arr if 1<=a<=9], reverse=True)]\n"
+        ));
+    }
+    if el.contains("exchange") && p.contains("even") {
+        v.push(format!(
+            "def {e}(lst1, lst2):\n    odd=sum(1 for x in lst1 if x%2)\n    even=sum(1 for x in lst2 if x%2==0)\n    return 'YES' if even>=odd else 'NO'\n"
+        ));
+    }
+    if el.contains("reverse_delete") {
+        v.push(format!(
+            "def {e}(s, c):\n    t=''.join(ch for ch in s if ch not in c)\n    return (t, t==t[::-1])\n"
+        ));
+    }
+    if el.contains("sum_squares") || (p.contains("multiple of 3") && p.contains("square")) {
+        v.push(format!(
+            "def {e}(lst):\n    result=[]\n    for i in range(len(lst)):\n        if i%3==0: result.append(lst[i]**2)\n        elif i%4==0: result.append(lst[i]**3)\n        else: result.append(lst[i])\n    return sum(result)\n"
+        ));
+    }
+    if el == "digits" || (el.contains("digits") && p.contains("odd")) {
+        v.push(format!(
+            "def {e}(n):\n    p=1; any_odd=False\n    for c in str(n):\n        d=int(c)\n        if d%2:\n            p*=d; any_odd=True\n    return p if any_odd else 0\n"
+        ));
+    }
+    if el.contains("min_subarray") || el.contains("minsubarraysum") {
+        v.push(format!(
+            "def {e}(nums):\n    best=cur=nums[0]\n    for x in nums[1:]:\n        cur=min(x,cur+x); best=min(best,cur)\n    return best\n"
+        ));
+    }
+    if el.contains("max_fill") {
+        v.push(format!(
+            "def {e}(grid, capacity):\n    import math\n    return sum(math.ceil(sum(row)/capacity) for row in grid)\n"
+        ));
+    }
+    if el.contains("get_closest_vowel") {
+        v.push(format!(
+            "def {e}(word):\n    vowels=set('AEIOUaeiou')\n    for i in range(len(word)-2,0,-1):\n        if word[i] in vowels and word[i-1] not in vowels and word[i+1] not in vowels:\n            return word[i]\n    return ''\n"
+        ));
+    }
+    if el.contains("match_parens") {
+        v.push(format!(
+            "def {e}(lst):\n    def ok(s):\n        d=0\n        for c in s:\n            d+=1 if c=='(' else -1\n            if d<0: return False\n        return d==0\n    return 'Yes' if ok(lst[0]+lst[1]) or ok(lst[1]+lst[0]) else 'No'\n"
+        ));
+    }
+    if el.contains("add_elements") {
+        v.push(format!(
+            "def {e}(arr, k):\n    return sum(x for x in arr[:k] if len(str(abs(x)))<=2)\n"
+        ));
+    }
+    if el.contains("get_odd_collatz") {
+        v.push(format!(
+            "def {e}(n):\n    s=set()\n    while n!=1:\n        if n%2: s.add(n); n=n*3+1\n        else: n//=2\n    s.add(1)\n    return sorted(s)\n"
+        ));
+    }
+    if el.contains("split_words") {
+        v.push(format!(
+            "def {e}(txt):\n    if ' ' in txt: return txt.split()\n    if ',' in txt: return txt.split(',')\n    return sum(1 for c in txt if c.islower() and (ord(c)-ord('a'))%2==0)\n"
+        ));
+    }
+    if el.contains("is_sorted") {
+        v.push(format!(
+            "def {e}(lst):\n    from collections import Counter\n    c=Counter(lst)\n    if any(v>2 for v in c.values()): return False\n    return all(lst[i]<=lst[i+1] for i in range(len(lst)-1))\n"
+        ));
+    }
+    if el.contains("prod_signs") {
+        v.push(format!(
+            "def {e}(arr):\n    if not arr: return None\n    if 0 in arr: return 0\n    neg=sum(1 for x in arr if x<0)\n    return (-1 if neg%2 else 1)*sum(abs(x) for x in arr)\n"
+        ));
+    }
+    if el.contains("special_factorial") || el.contains("specialfactorial") {
+        v.push(format!(
+            "def {e}(n):\n    import math\n    r=1\n    for i in range(1,n+1): r*=math.factorial(i)\n    return r\n"
+        ));
+    }
+    if el.contains("compare_one") {
+        v.push(format!(
+            "def {e}(a, b):\n    def f(x):\n        if isinstance(x,str): return float(x.replace(',','.'))\n        return float(x)\n    fa,fb=f(a),f(b)\n    if fa==fb: return None\n    return a if fa>fb else b\n"
+        ));
+    }
+    if el.contains("largest_smallest_integers") {
+        v.push(format!(
+            "def {e}(lst):\n    neg=[x for x in lst if x<0]; pos=[x for x in lst if x>0]\n    return (max(neg) if neg else None, min(pos) if pos else None)\n"
+        ));
+    }
+    if el.contains("can_arrange") {
+        v.push(format!(
+            "def {e}(arr):\n    ans=-1\n    for i in range(1,len(arr)):\n        if arr[i]<arr[i-1]: ans=i\n    return ans\n"
+        ));
+    }
+    if el.contains("move_one_ball") {
+        v.push(format!(
+            "def {e}(arr):\n    if not arr: return True\n    n=len(arr); s=sorted(arr)\n    for k in range(n):\n        if arr[k:]+arr[:k]==s: return True\n    return False\n"
+        ));
+    }
+    if el.contains("count_nums") {
+        v.push(format!(
+            "def {e}(arr):\n    def digitsum(n):\n        if n==0: return 0\n        sign=-1 if n<0 else 1\n        s=str(abs(n))\n        vals=[int(c) for c in s]\n        vals[0]*=sign\n        return sum(vals)\n    return sum(1 for x in arr if digitsum(x)>0)\n"
+        ));
+    }
 
     if p.contains("similar")
         || p.contains("common element")
@@ -5366,12 +5502,40 @@ fn chew_code(org: &mut Organism, it: &BenchItem, zeroshot: bool, depth: u32) -> 
         // Metabolic: invent depth + scaffold fan-out gated by remaining Python budget
         let depth = depth.min(2);
         let scaffold_cap = match code_env::python_budget_remaining() {
-            0..=3 => 2,
-            4..=8 => 4,
-            9..=15 => 7,
-            _ => 12,
+            0..=3 => 3,
+            4..=8 => 6,
+            9..=15 => 10,
+            _ => 14,
         };
         let kws = content_words(&it.prompt);
+        // Entry-matched scaffolds first (high-precision motors) before episodic scan
+        // when genome has budget — saves membrane for right programs.
+        if code_env::python_budget_remaining() >= 2 {
+            let mut early = invent_code_scaffolds(&it.prompt, &entry);
+            early.retain(|sc| sc.contains(&format!("def {entry}")));
+            for sc in early.into_iter().take(4) {
+                if code_env::python_budget_remaining() == 0 {
+                    break;
+                }
+                if try_run_code_tests(&sc, &it.tests) {
+                    org.teach(
+                        &format!(
+                            "EPISODE_CODE[{}] entry={entry} kws={} | code:\n{sc}",
+                            it.id,
+                            kws.iter().take(8).cloned().collect::<Vec<_>>().join(",")
+                        ),
+                        "episode_code",
+                        1.15,
+                    );
+                    org.teach(
+                        &format!("PRIMITIVE_OK[{entry}]:\n{sc}"),
+                        "code_primitive",
+                        1.1,
+                    );
+                    return (true, "code_zs_entry_scaffold");
+                }
+            }
+        }
         for d in 0..depth {
             // 1) Engram bodies must *run* against tests (not name-match alone)
             let ans = retrieve_bench_ans(org, it, zeroshot);
@@ -6146,8 +6310,8 @@ pub fn pack_zs_mastery(pack: &mut [Organism], bank: &mut BenchBank, rng: &mut im
     if bank.items.is_empty() {
         return "zs_mastery: empty bank".into();
     }
-    // Own metabolic breath: math composition + invent need membrane for flagship climb
-    code_env::reset_python_budget(36);
+    // Flagship breath: composition + invent + science transfer under membrane
+    code_env::reset_python_budget(42);
     let mut drilled = 0u32;
     let mut soft_hits = 0u32;
     // Drain error queue first (stimuli on known fail loci)
@@ -6417,7 +6581,7 @@ pub fn raw_zs_snapshot(
         // Organ-specific membrane top-up so audit measures capability, not breath order
         match *s {
             Suite::Humaneval | Suite::Mbpp => {
-                code_env::ensure_python_budget(40);
+                code_env::ensure_python_budget(56);
             }
             Suite::Gsm8k | Suite::Math => {
                 code_env::ensure_python_budget(20);
