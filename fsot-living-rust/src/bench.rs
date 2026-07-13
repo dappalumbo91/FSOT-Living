@@ -1630,7 +1630,7 @@ fn consolidate_error(
         }
         update_suite_ema(&mut bank.suite_acc, it.suite, true);
         apply_bench_sample(org, true);
-        credit_organs(org, it.suite, true);
+        credit_organs(org, it.suite, true, false, "err_consol_pass");
     } else {
         // Still wrong after teach — re-queue and stronger stimuli
         remediate_fail(org, bank, it);
@@ -2024,7 +2024,10 @@ fn apply_zs_sample(org: &mut Organism, pass: bool) {
     org.bench_zs_accuracy = (g * (1.0 - lr) + sample * lr).clamp(0.0, 1.0);
 }
 
-fn credit_organs(org: &mut Organism, suite: Suite, pass: bool) {
+/// Credit organ tissue after an exam.
+/// `zeroshot` + `mode` distinguish **invent** (held-out tests green) from **study ref re-exec**
+/// so breeding no longer mistakes canonical practice for invent competence (diagnostic P2).
+fn credit_organs(org: &mut Organism, suite: Suite, pass: bool, zeroshot: bool, mode: &str) {
     let sample = if pass { 1.0 } else { 0.0 };
     // Milder LR — avoid wrecking organ health / pathway balance on hard bench noise
     let lr = if pass { 0.10 } else { 0.04 };
@@ -2035,25 +2038,42 @@ fn credit_organs(org: &mut Organism, suite: Suite, pass: bool) {
         | Suite::ArcChallenge
         | Suite::ArcEasy
         | Suite::Bbh => {
+            // MMLU-Pro: Formal subject load — slightly faster LR when observed domain + couple high
+            let pro_lr = if matches!(suite, Suite::MmluPro) && org.observed {
+                lr * (1.0 + 0.25 * (org.guidance.domain_coupling - 0.75).max(0.0))
+            } else {
+                lr
+            };
             org.knowledge_accuracy =
-                (org.knowledge_accuracy * (1.0 - lr) + sample * lr).clamp(0.0, 1.0);
+                (org.knowledge_accuracy * (1.0 - pro_lr) + sample * pro_lr).clamp(0.0, 1.0);
             if pass {
                 org.knowledge_skill = (org.knowledge_skill + 0.02).min(1.0);
             }
         }
         Suite::Gsm8k | Suite::Math => {
-            // Math organ = composition under Formal field (code hands + multi-step pathway)
-            org.code_accuracy = (org.code_accuracy * (1.0 - lr * 0.7) + sample * lr * 0.7).clamp(0.0, 1.0);
-            let clr = if org.composition_accuracy < 0.45 {
-                lr * 1.4
-            } else {
-                lr
-            };
-            org.composition_accuracy =
-                (org.composition_accuracy * (1.0 - clr) + sample * clr).clamp(0.0, 1.0);
+            // Composition organ under Formal consciousness/energy — not study free grades
+            let compose_hit = mode.contains("gsm_expr")
+                || mode.contains("gsm_motor")
+                || mode.contains("gsm_schema")
+                || mode.contains("expr")
+                || zeroshot;
+            if compose_hit || zeroshot {
+                let clr = if org.composition_accuracy < 0.45 {
+                    lr * 1.5
+                } else {
+                    lr
+                };
+                org.composition_accuracy =
+                    (org.composition_accuracy * (1.0 - clr) + sample * clr).clamp(0.0, 1.0);
+            }
+            // Code hands only when python ground was the path
+            if mode.contains("gsm_expr") || mode.contains("gsm_motor") || mode.contains("python") {
+                org.code_accuracy =
+                    (org.code_accuracy * (1.0 - lr * 0.5) + sample * lr * 0.5).clamp(0.0, 1.0);
+            }
             if pass {
                 org.language_accuracy =
-                    (org.language_accuracy * (1.0 - lr * 0.4) + sample * lr * 0.4).clamp(0.0, 1.0);
+                    (org.language_accuracy * (1.0 - lr * 0.35) + sample * lr * 0.35).clamp(0.0, 1.0);
             }
         }
         Suite::Hellaswag | Suite::Winogrande | Suite::Ifeval => {
@@ -2066,14 +2086,65 @@ fn credit_organs(org: &mut Organism, suite: Suite, pass: bool) {
             }
         }
         Suite::Mbpp | Suite::Humaneval => {
-            org.code_accuracy = (org.code_accuracy * (1.0 - lr) + sample * lr).clamp(0.0, 1.0);
-            org.code_l2_accuracy =
-                (org.code_l2_accuracy * (1.0 - lr * 0.6) + sample * lr * 0.6).clamp(0.0, 1.0);
-            if pass {
-                org.code_skill = (org.code_skill + 0.03).min(1.0);
+            let study_ref = !zeroshot
+                && (mode.contains("study_ref")
+                    || mode == "code_study_ref_exec"
+                    || mode == "code_recall"
+                    || mode == "err_consol_pass"
+                    || mode == "retry");
+            if study_ref {
+                // Motor practice on taught reference — skill only, NOT invent metric
+                if pass {
+                    org.code_skill = (org.code_skill + 0.012).min(1.0);
+                }
+            } else if zeroshot {
+                // Held-out invent under unit-test fitness (diagnostic truth)
+                let ilr = if pass { 0.14 } else { 0.06 };
+                org.code_accuracy =
+                    (org.code_accuracy * (1.0 - ilr) + sample * ilr).clamp(0.0, 1.0);
+                org.code_l2_accuracy =
+                    (org.code_l2_accuracy * (1.0 - ilr * 0.7) + sample * ilr * 0.7).clamp(0.0, 1.0);
+                if pass {
+                    org.code_skill = (org.code_skill + 0.04).min(1.0);
+                    // Successful invent under Formal energy field also trains composition pathway
+                    org.composition_accuracy =
+                        (org.composition_accuracy * 0.92 + 0.08).min(1.0);
+                }
+            } else {
+                // Study path that still invents / non-ref modes
+                org.code_accuracy =
+                    (org.code_accuracy * (1.0 - lr * 0.6) + sample * lr * 0.6).clamp(0.0, 1.0);
+                if pass {
+                    org.code_skill = (org.code_skill + 0.02).min(1.0);
+                }
             }
         }
     }
+}
+
+/// Formal 2.1 motor expressivity — how widely effector programs fan out under membrane.
+/// Uses baked Formal constants (consciousness_factor, phase_variance, perceived_param)
+/// + genetic domain_coupling + regime + |S| after domain load. Not free accuracy.
+fn formal_motor_expressivity(org: &Organism) -> f64 {
+    use crate::scalar::constants::{consciousness_factor, new_perceived_param, phase_variance};
+    let couple = org.guidance.domain_coupling.clamp(0.4, 1.4);
+    let s_mag = org.s.abs().min(1.2);
+    let emerge = match org.regime.as_str() {
+        "emergence" => 1.18,
+        "damping" => 0.88,
+        _ => 1.0,
+    };
+    // Formal quirk pathway: observed domains (energy/consciousness/neural…) open expression
+    let observer = if org.observed {
+        1.0 + 0.30 * (consciousness_factor() * phase_variance()).abs().min(0.55)
+    } else {
+        // ai / cosmological-style unobserved: tighter invent fan-out
+        0.82
+    };
+    let perceived = 1.0 + 0.12 * new_perceived_param().min(0.45);
+    // recent_hits damp growth_term in Formal algebra — mild brake when overloaded
+    let hit_brake = 1.0 - 0.06 * org.recent_hits.clamp(0.0, 4.0);
+    (couple * (0.65 + 0.45 * s_mag) * emerge * observer * perceived * hit_brake).clamp(0.50, 1.90)
 }
 
 fn update_suite_ema(map: &mut HashMap<&'static str, (f64, u64)>, suite: Suite, pass: bool) {
@@ -2223,11 +2294,38 @@ fn apply_item_fsot_context(org: &mut Organism, domain: &str, suite: Suite) {
         .clamp(0.05, 0.95);
     org.observed = d.observed;
     // Exam contact raises recent_hits (FSOT growth_term / term1)
+    // Formal domain recent_hits (energy/consciousness often 1) seeds growth_term state
     let exam_load = 0.12 + 0.10 * (1.0 - org.bench_zs_accuracy).clamp(0.0, 1.0)
-        + 0.04 * (g_couple - 0.75).max(0.0);
+        + 0.04 * (g_couple - 0.75).max(0.0)
+        + if matches!(suite, Suite::Gsm8k | Suite::Math | Suite::Humaneval | Suite::Bbh) {
+            0.05
+        } else {
+            0.0
+        };
     org.recent_hits = (org.recent_hits * 0.65 + d.recent_hits + exam_load).clamp(0.0, 5.0);
+    // Trend bias: Formal emergence preference as mild term2 prior (not free grades)
     // Recompute S under this genetically gated Formal field
     org.compute(org.pressure.min(1.0));
+    // After S: teach a lightweight Formal field engram for transfer (no answer)
+    if matches!(
+        suite,
+        Suite::Gsm8k | Suite::Math | Suite::Humaneval | Suite::MmluPro | Suite::Bbh
+    ) {
+        org.teach(
+            &format!(
+                "FORMAL_FIELD domain={domain} D_eff={:.1} δψ={:.2} obs={} regime={} S={:.3} couple={:.2} express={:.2}",
+                org.d_eff,
+                org.delta_psi,
+                org.observed,
+                org.regime,
+                org.s,
+                g_couple,
+                formal_motor_expressivity(org)
+            ),
+            "formal_field",
+            0.55,
+        );
+    }
 }
 
 /// How many internal deliberation cycles this organism can "chew" now.
@@ -2580,10 +2678,24 @@ fn rank_mcq_choices(
                 }
             }
             // MMLU-Pro: longer technical choices often carry domain nouns also in stem
+            // Formal observed + domain_coupling amplify distinctive subject cues (10-way margin)
             if it.suite == Suite::MmluPro {
+                let formal_w = if org.observed {
+                    1.0 + 0.35 * (org.guidance.domain_coupling - 0.7).max(0.0)
+                        + 0.15 * formal_motor_expressivity(org).min(1.5)
+                } else {
+                    1.0
+                };
                 for w in cw {
                     if w.len() >= 6 && stem_w.iter().any(|t| t == w) {
-                        s += 0.40;
+                        s += 0.40 * formal_w;
+                    }
+                    if w.len() >= 5
+                        && stem_w
+                            .iter()
+                            .any(|t| t.len() >= 5 && stem4(t) == stem4(w) && t != w)
+                    {
+                        s += 0.22 * formal_w;
                     }
                 }
             }
@@ -3588,11 +3700,12 @@ fn chew_gsm(org: &mut Organism, it: &BenchItem, zeroshot: bool, depth: u32) -> (
 
     // Sensory extraction: numbers on the chalkboard
     let nums = extract_numbers(&it.prompt);
-    // Under emergence/observed (Formal energy/consciousness), favor multi-step compositions
+    // Formal 2.1 expressivity: multi-op composition favored under observed domains + couple
+    let express = formal_motor_expressivity(org);
     let fsot_compose_boost = if org.regime == "emergence" || org.observed {
-        2
+        2 + ((express - 1.0) * 3.0).round() as i32
     } else {
-        0
+        ((express - 0.8) * 2.0).round().max(0.0) as i32
     };
 
     // 1) Narrative expression motor — commit top-ranked expression (single emission).
@@ -5646,20 +5759,24 @@ fn chew_code(org: &mut Organism, it: &BenchItem, zeroshot: bool, depth: u32) -> 
             return (false, "code_zs_no_tests");
         }
         // Metabolic: invent depth + scaffold fan-out gated by remaining Python budget
+        // Formal 2.1 expressivity scales fan-out (observer + couple + |S| + regime)
         let depth = depth.min(2);
-        let scaffold_cap = match code_env::python_budget_remaining() {
-            0..=3 => 3,
-            4..=8 => 6,
-            9..=15 => 10,
-            _ => 14,
+        let express = formal_motor_expressivity(org);
+        let base_cap = match code_env::python_budget_remaining() {
+            0..=3 => 3.0,
+            4..=8 => 6.0,
+            9..=15 => 10.0,
+            _ => 14.0,
         };
+        let scaffold_cap = ((base_cap * express).round() as usize).clamp(2, 16);
+        let early_cap = ((4.0 * express).round() as usize).clamp(2, 8);
         let kws = content_words(&it.prompt);
         // Entry-matched scaffolds first (high-precision motors) before episodic scan
         // when genome has budget — saves membrane for right programs.
         if code_env::python_budget_remaining() >= 2 {
             let mut early = invent_code_scaffolds(&it.prompt, &entry);
             early.retain(|sc| sc.contains(&format!("def {entry}")));
-            for sc in early.into_iter().take(4) {
+            for sc in early.into_iter().take(early_cap) {
                 if code_env::python_budget_remaining() == 0 {
                     break;
                 }
@@ -6143,12 +6260,11 @@ fn exam_bench_one_mode(
     if !zeroshot {
         update_suite_ema(&mut bank.suite_acc, it.suite, pass);
         apply_bench_sample(org, pass);
-        credit_organs(org, it.suite, pass);
+        credit_organs(org, it.suite, pass, false, mode);
     } else {
         apply_bench_sample(org, pass);
-        if pass {
-            credit_organs(org, it.suite, true);
-        }
+        // Always credit invent path on zs (pass or fail) so code_accuracy tracks truth
+        credit_organs(org, it.suite, pass, true, mode);
     }
 
     if pass {
@@ -6245,22 +6361,22 @@ fn soft_spot_suite_drill(
         let it2 = bank.items[i2].clone();
         // Encode under pressure (study track)
         teach_item_bank(&mut pack[oi], bank, &it, 1.25);
-        let (pass, _) = score_item(&mut pack[oi], &it, false);
+        let (pass, smode) = score_item(&mut pack[oi], &it, false);
         update_suite_ema(&mut bank.suite_acc, suite, pass);
         if pass {
             apply_bench_sample(&mut pack[oi], true);
-            credit_organs(&mut pack[oi], suite, true);
+            credit_organs(&mut pack[oi], suite, true, false, smode);
             // Distill transfer schema (pathway, not answer sheet for it2)
             distill_transfer_schema(&mut pack[oi], &it);
         } else {
             remediate_fail(&mut pack[oi], bank, &it);
         }
         // Held-out zs on different card
-        let (zp, _) = score_item(&mut pack[oi], &it2, true);
+        let (zp, zmode) = score_item(&mut pack[oi], &it2, true);
         update_suite_ema(&mut bank.suite_zs, suite, zp);
         apply_zs_sample(&mut pack[oi], zp);
+        credit_organs(&mut pack[oi], suite, zp, true, zmode);
         if zp {
-            credit_organs(&mut pack[oi], suite, true);
             pack[oi].pressure = (pack[oi].pressure - 0.01).max(0.05);
         } else {
             remediate_fail(&mut pack[oi], bank, &it2);
@@ -6494,11 +6610,11 @@ pub fn pack_zs_mastery(pack: &mut [Organism], bank: &mut BenchBank, rng: &mut im
                     let oi = rng.gen_range(0..pack.len());
                     let it = bank.items[idxs[rng.gen_range(0..idxs.len())]].clone();
                     teach_item_bank(&mut pack[oi], bank, &it, 1.2);
-                    let (pass, _) = score_item(&mut pack[oi], &it, false);
+                    let (pass, smode) = score_item(&mut pack[oi], &it, false);
                     update_suite_ema(&mut bank.suite_acc, it.suite, pass);
                     if pass {
                         apply_bench_sample(&mut pack[oi], true);
-                        credit_organs(&mut pack[oi], it.suite, true);
+                        credit_organs(&mut pack[oi], it.suite, true, false, smode);
                         distill_transfer_schema(&mut pack[oi], &it);
                         soft_hits += 1;
                     }
@@ -6539,11 +6655,11 @@ pub fn pack_zs_mastery(pack: &mut [Organism], bank: &mut BenchBank, rng: &mut im
                     distill_transfer_schema(&mut pack[oi], &it);
                 }
                 // Held-out invent — on miss, light pressure only (no full remediate flood)
-                let (zp, _) = score_item(&mut pack[oi], &it2, true);
+                let (zp, zmode) = score_item(&mut pack[oi], &it2, true);
                 update_suite_ema(&mut bank.suite_zs, it2.suite, zp);
                 apply_zs_sample(&mut pack[oi], zp);
+                credit_organs(&mut pack[oi], it2.suite, zp, true, zmode);
                 if zp {
-                    credit_organs(&mut pack[oi], it2.suite, true);
                     soft_hits += 1;
                 } else {
                     pack[oi].pressure = (pack[oi].pressure + 0.02).min(1.5);

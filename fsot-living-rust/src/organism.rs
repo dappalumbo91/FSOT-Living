@@ -358,20 +358,22 @@ impl Organism {
             + (self.codon_table.len() as f64 / 64.0) * 0.4
             + self.integration * 0.3;
         // Genetic Formal coupling: lineages that bind domain fields breed when competent
+        // Prefer composition + held-out zs (invent truth) over inflated study-only code
         let genetic_field = self.guidance.domain_coupling.clamp(0.4, 1.4)
             * (0.5 + self.composition_accuracy + self.knowledge_accuracy * 0.5);
         // Strong weight on accuracy & efficiency so weak lineages don't linger as parents
         fit * 0.35 + acc * 8.0 + efficiency * 2.5 + organ_depth * 0.5
             + self.lang_cortex.generalize_accuracy * 2.0
             + self.knowledge_accuracy * 1.5
-            + self.composition_accuracy * 2.2 // math composition under Formal load
+            + self.composition_accuracy * 2.6 // multi-step under Formal energy/consciousness
+            + self.code_accuracy * 1.4 // invent-honest after credit reform
             + self.audio_accuracy * 1.0
             + self.video_accuracy * 1.0
             + self.js_accuracy * 1.0
             + self.self_model_accuracy * 1.8
-            + genetic_field * 1.1
-            + self.bench_accuracy * 2.0 // exam-environment organ health
-            + self.bench_zs_accuracy * 2.4 // held-out transfer (life under pressure)
+            + genetic_field * 1.25
+            + self.bench_accuracy * 1.6 // study health
+            + self.bench_zs_accuracy * 3.0 // held-out transfer dominates selection
     }
 
     /// Prefer cultural traits from the higher-accuracy parent for each organ.

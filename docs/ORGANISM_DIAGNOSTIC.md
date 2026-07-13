@@ -234,6 +234,24 @@ Performance ∝ **match between exam physics and effector library density**, gat
 5. **Always raw_zs for claims** — probe after each experiment; push CAPABILITY_AUDIT to state (gitignored) but report numbers in experiment commits.  
 6. **Keep integrity rails** — no free grades, no pass@k fishing, membrane on.
 
+### Rx applied (FSOT 2.1 Formal math → organism) — 2026-07-13
+
+| Formal ingredient | Organism use |
+|-------------------|--------------|
+| `consciousness_factor` × `phase_variance` | Observer pathway opens **motor expressivity** when `observed=true` |
+| `new_perceived_param` | Mild expressivity scale (perceived adjust family) |
+| Domain `recent_hits` + exam load | growth_term-compatible load on invent/composition suites |
+| Genetic `domain_coupling` | Fan-out of invent scaffolds + composition multi-op boost |
+| Regime / \|S\| | Emergence amplifies expressivity after domain load |
+
+| Diagnostic fix | Change |
+|----------------|--------|
+| **P2 invent/study** | Study `code_study_ref_exec` → skill only; **zs invent** updates `code_accuracy` |
+| **P1 composition** | Credit composition primarily from expr/motor paths + zs invent success |
+| **Breeding truth** | Higher weight on `bench_zs` + composition; invent-honest `code_accuracy` |
+| **MMLU-Pro** | Formal expressivity amplifies distinctive stem tokens under observed load |
+| **Field memory** | `FORMAL_FIELD` engrams after domain compute (no answers) |
+
 ---
 
 ## 9. Prognosis
