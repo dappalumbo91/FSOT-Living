@@ -263,6 +263,8 @@ cargo build --release -p mind_bridge
 
 | Document | Content |
 |----------|---------|
+| `docs/ARCHITECTURE.md` | Monorepo component map + exam data flow |
+| `docs/ORGANISM_DIAGNOSTIC.md` | **Medical diagnostic:** genetic/organ breakdown of high vs low suite precision |
 | `fsot-trinary-body/docs/BIOLOGICAL_INTELLIGENCE_MODEL.md` | How capability must work biologically |
 | `fsot-trinary-body/docs/ARCHITECTURE.md` | Trinary body stack |
 | `fsot-trinary-body/docs/EVAL_INTEGRITY.md` | Anti-fudge rules |
