@@ -120,11 +120,15 @@ fn remediate(o: &mut Organism, organ: &str, strength: f64) {
         }
         "vision" => {
             o.teach(
-                "ACCURACY_HOME: vision — classify brightness/regime images; warm_emergence vs gray_neutral.",
+                "ACCURACY_HOME: vision — Biohub cell tracking: U-Net detect + FSOT pure link + ILP on CPU; \
+                 adaptive Living dormant when proxy≥0.62; conf-ranked NMS when proxy≥0.90 (v50 0.904).",
                 "homeo_vision",
                 s,
             );
             o.vision_skill = (o.vision_skill + 0.025).min(1.0);
+            if let Some(proxy) = crate::cell_tracking::load_proxy_from_state() {
+                o.vision_accuracy = o.vision_accuracy * 0.85 + proxy * 0.15;
+            }
         }
         "knowledge" => {
             o.teach(

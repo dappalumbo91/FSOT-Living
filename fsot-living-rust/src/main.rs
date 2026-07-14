@@ -11,6 +11,7 @@ mod audio;
 mod behavior_monitor;
 mod bench;
 mod body_bridge;
+mod cell_tracking;
 mod capability;
 mod code_env;
 mod constraints;

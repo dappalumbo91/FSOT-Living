@@ -13,6 +13,8 @@ mod behavior_monitor;
 mod bench;
 #[path = "../body_bridge.rs"]
 mod body_bridge;
+#[path = "../cell_tracking.rs"]
+mod cell_tracking;
 #[path = "../capability.rs"]
 mod capability;
 #[path = "../code_env.rs"]

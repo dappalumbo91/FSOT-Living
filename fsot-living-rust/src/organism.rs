@@ -55,6 +55,9 @@ pub struct Organism {
     pub language_skill: f64,
     pub code_accuracy: f64,
     pub vision_accuracy: f64,
+    /// Biohub Kaggle train-proxy / leaderboard rolling accuracy (v50 bridge).
+    pub cell_tracking_proxy: f64,
+    pub cell_tracking_adaptive: bool,
     pub language_accuracy: f64,
     pub tools_owned: Vec<String>,
     // Pack / social / collective (horizontal culture)
@@ -154,6 +157,8 @@ impl Organism {
             language_skill: 0.35,
             code_accuracy: 0.0,
             vision_accuracy: 0.0,
+            cell_tracking_proxy: crate::cell_tracking::DEFAULT_PROXY,
+            cell_tracking_adaptive: true,
             language_accuracy: 0.0,
             tools_owned: Vec::new(),
             social_skill: 0.3,
