@@ -123,7 +123,7 @@ Not finished forever — next stretch: gen_acc/media toward 85% open ceiling, co
 | | |
 |--|--|
 | **Gap** | Habitat organ % ≠ SOTA LLM benchmarks; capability looked “separate” from MMLU/GSM8K/etc. |
-| **Remedy** | `bench.rs` loads `D:\training data` + `D:\FSOT_Benchmarks` (MMLU · GSM8K · HellaSwag · TruthfulQA · MBPP) |
+| **Remedy** | `bench.rs` loads `<local folder, not included in repo: training data>` + `<local folder, not included in repo: FSOT_Benchmarks>` (MMLU · GSM8K · HellaSwag · TruthfulQA · MBPP) |
 | **Biology** | Study→test on external items; credit knowledge / gen_acc / code organs; `bench_accuracy` + `CAPABILITY_AUDIT.json` |
 | **Targets** | `BENCH_TARGET=0.80` · thr::BENCH · pack `bench_mastery` · heavy phase 10 · fact-card fusion into knowledge |
 | **Env** | `FSOT_TRAINING_DATA` / `FSOT_BENCH_ROOT` override paths |
@@ -134,7 +134,7 @@ Not finished forever — next stretch: gen_acc/media toward 85% open ceiling, co
 |-------|------|
 | **ZS share** | 65% while under zs target · dedicated `pack_zs_mastery` · `bench_zs_accuracy` organ |
 | **ZS targets** | **70%** floor (`BENCH_ZS_TARGET`) · **80%** stretch (`BENCH_ZS_STRETCH`) |
-| **ARC** | Challenge + Easy CSV (numpy choices parser) from `D:\training data\ARC-*.csv` |
+| **ARC** | Challenge + Easy CSV (numpy choices parser) from `ARC-*.csv` (local training data folder, not included in repo) |
 | **HumanEval** | Loader ready for `humaneval.jsonl` / `HumanEval.jsonl` when dropped on the drive |
 | **Honest code zs** | Zero-shot never free-runs reference MBPP/HumanEval solutions |
 | **Audit** | `CAPABILITY_AUDIT.json` reports pack_zs_mean/min + per-suite zeroshot EMAs |

@@ -128,7 +128,7 @@ loop:
 | M20 | Dream journal → viz + richer domain tags from Lean | next |
 | M21 | QEMU framebuffer bare-metal face | later |
 
-## Relationship to `D:\Fsot trinary\fsot_os`
+## Relationship to `<local folder, not included in repo: Fsot trinary/fsot_os>`
 
 Prior art already proved QEMU UEFI, heap, frames, interoception, mind protocol,
 TVM/FSOTB. This tree is a **clean ground-up body** next to the living mind:

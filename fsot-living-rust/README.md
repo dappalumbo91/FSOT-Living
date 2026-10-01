@@ -5,7 +5,7 @@ Native terminal. **No browser.** Evolutionary multimodal organism.
 ## Run
 
 ```powershell
-cd "C:\Users\damia\Desktop\living fsot\files-e5887462\fsot-living-rust"
+cd "fsot-living-rust"
 .\start_fsot_living.bat
 ```
 

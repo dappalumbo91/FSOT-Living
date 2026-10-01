@@ -1,6 +1,6 @@
 # Circle-back: FSOT 2.1 Lean verification (local + GitHub)
 
-**Local tree reviewed:** `C:\Users\damia\Desktop\FSOT-2.1-Lean\FSOT-2.1-Lean-main\FSOT-2.1-Lean-main`  
+**Local tree reviewed:** `<local folder, not included in repo: FSOT-2.1-Lean-main/FSOT-2.1-Lean-main>`  
 **Remote (from progress YAML):** https://github.com/dappalumbo91/FSOT-2.1-Lean.git  
 **Progress stamp:** `data/fsot_verification_progress.yaml` generated **2026-07-10**
 
@@ -22,7 +22,7 @@ This is no longer a thin Scalar demo. The public README + progress file show a *
 
 Also present: Neurolab precision claims, cosmology waves, cyber tier, hydrology, pharmacology, etc. — with **honest claims** manifests (parameter honesty, not “zero-fit marketing”).
 
-Secondary lean workspace: `C:\Users\damia\Desktop\FSOT_Lean_Proofs` (Core + Scalar engine journey, earlier formal path).
+Secondary lean workspace: `<local folder, not included in repo: FSOT_Lean_Proofs>` (Core + Scalar engine journey, earlier formal path).
 
 ## How this grounds the companion OS we built
 
@@ -38,9 +38,9 @@ Secondary lean workspace: `C:\Users\damia\Desktop\FSOT_Lean_Proofs` (Core + Scal
 ## Recommended ingest into this project (next engineering)
 
 1. **Pin a verification snapshot** (git tag or copy of `FSOT_VERIFIED_SCOPE.yaml` + `k` constant) into `fsot-living-rust/organism_workspace/knowledge/`.  
-2. **Teach cards** from `honest_claims_manifest` + domain map (already partly done via D:\ training packs).  
+2. **Teach cards** from `honest_claims_manifest` + domain map (already partly done via <local drive> training packs).  
 3. **Body LTM schema** version field matching Lean scalar version string.  
-4. **Do not** pull multi-GB `G:\FSOT-PublicData` into QEMU — keep as host LTM organ mount.
+4. **Do not** pull multi-GB `<local folder, not included in repo: FSOT-PublicData>` into QEMU — keep as host LTM organ mount.
 
 ## Note on GitHub “global update”
 
