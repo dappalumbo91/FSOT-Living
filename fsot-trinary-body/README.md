@@ -10,7 +10,7 @@ rebuilds each layer as **FSOT biology + dynamic trinary genetic states**.
 |------|------|
 | Mind gym (working) | `../fsot-living-rust` |
 | Body (this tree) | `fsot-trinary-body` |
-| Prior art (reference only) | `D:\Fsot trinary\fsot_os` |
+| Prior art (reference only) | `<local folder, not included in repo: Fsot trinary/fsot_os>` |
 
 ## Core law
 
@@ -55,7 +55,7 @@ fsot-trinary-body/
 ## Quick start (host — no QEMU required)
 
 ```powershell
-cd "C:\Users\damia\Desktop\living fsot\files-e5887462\fsot-trinary-body"
+cd "fsot-trinary-body"
 cargo test -p trinary -p genetic
 cargo run -p host_probe
 ```

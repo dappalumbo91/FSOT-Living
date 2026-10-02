@@ -6,7 +6,7 @@
 //!
 //! Organisms teach() facts, retrieve by semantic+keyword, and sit knowledge exams.
 //! Path to "LLM-scale data": grow jsonl packs + fuse external benches via `bench.rs`
-//! (MMLU/GSM8K/… from D:\training data) as *exam-backed curriculum*, never
+//! (MMLU/GSM8K/… from $FSOT_TRAINING_DATA) as *exam-backed curriculum*, never
 //! ungrounded next-token training. Organs implement the same capability surface.
 
 use crate::language::{semantic_store, SemanticEntry};

@@ -187,7 +187,7 @@ Optional:
 |------|------|
 | **Node.js** | JS organ tools / legacy habitat scripts |
 | **QEMU** | Trinary body UEFI path |
-| External bench roots | e.g. `D:\training data`, `D:\FSOT_Benchmarks` via env |
+| External bench roots | e.g. `<local folder, not included in repo: training data>`, `<local folder, not included in repo: FSOT_Benchmarks>` via env |
 
 ### Python packages
 
@@ -254,7 +254,7 @@ cargo build --release -p mind_bridge
 | Variable / path | Purpose |
 |-----------------|--------|
 | `FSOT_PROBE_TICKS` | Headless habitat length for probe |
-| `FSOT_TRAINING_DATA` / mounted `D:\training data` | External exam corpora |
+| `FSOT_TRAINING_DATA` / mounted `<local folder, not included in repo: training data>` | External exam corpora |
 | Workspace under `organism_workspace/` | Sandbox for python/js tools |
 
 ---

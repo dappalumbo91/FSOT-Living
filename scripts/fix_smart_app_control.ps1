@@ -28,7 +28,7 @@ if (Test-Path $ci) {
 Restart-Service AppIDSvc -Force -ErrorAction SilentlyContinue
 
 # Optional: Defender exclusion for cargo target (not a substitute for SAC Off)
-$build = "C:\Users\damia\Desktop\living fsot\files-e5887462\fsot-living-rust\target"
+$build = Join-Path (Split-Path -Parent $PSScriptRoot) "fsot-living-rust\target"
 try {
     $ex = @( (Get-MpPreference).ExclusionPath )
     if ($ex -notcontains $build) {

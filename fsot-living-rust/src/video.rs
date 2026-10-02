@@ -1,4 +1,4 @@
-//! Video drive pressure — frame sampling from G:\movies / showes / Debut
+//! Video drive pressure — frame sampling from $FSOT_LOCAL_DATA/movies / showes / Debut
 //!
 //! Uses ffmpeg to pull 1–2 scaled frames, then vision organ features.
 //! Temporal pressure: compare frame regime hints for consistency / shift.
@@ -26,7 +26,7 @@ pub fn video_scratch() -> PathBuf {
 }
 
 pub fn media_roots() -> Vec<PathBuf> {
-    [r"G:\movies", r"G:\showes", r"G:\Debut"]
+    [r"../data_external/local/movies", r"../data_external/local/showes", r"../data_external/local/Debut"]
         .iter()
         .map(PathBuf::from)
         .filter(|p| p.exists())

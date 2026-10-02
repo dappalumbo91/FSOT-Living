@@ -43,7 +43,7 @@ So: **benchmarking SOTA does not require QEMU.** QEMU is a *body* / nerve path, 
 
 #### GitHub
 - **Easy:** publish crate, CI `cargo test` / probe smoke, docs, datasets as LFS or download scripts.
-- **Hard:** huge training data on D:\ — use download scripts + `.gitignore`; don’t ship multi-GB dumps in the repo.
+- **Hard:** huge training data on <local drive> — use download scripts + `.gitignore`; don’t ship multi-GB dumps in the repo.
 - **Body:** document “file mode” and optional TCP; QEMU as advanced optional path.
 
 #### Hugging Face
@@ -53,7 +53,7 @@ So: **benchmarking SOTA does not require QEMU.** QEMU is a *body* / nerve path, 
 - **No QEMU** on free Spaces — keep body offline; mind-only mode.
 
 #### Kaggle
-- **Notebook kernel:** Linux, internet often off for submission, time limits, no interactive TUI, no QEMU, no G:\ media drives.
+- **Notebook kernel:** Linux, internet often off for submission, time limits, no interactive TUI, no QEMU, no <local drive> media drives.
 - **Strategy:**
   1. **Offline pack:** bake a `bench_bank` snapshot or small jsonl into the notebook dataset.
   2. **Headless binary:** prebuild `fsot-probe` or a slim `fsot-eval` for Linux x86_64, or compile in-notebook if toolchain allowed.
@@ -65,14 +65,14 @@ So: **benchmarking SOTA does not require QEMU.** QEMU is a *body* / nerve path, 
 
 | Mode | Env | Use |
 |------|-----|-----|
-| **Lab full** | Host + optional body/QEMU + D:\ data | Daily evolution |
+| **Lab full** | Host + optional body/QEMU + <local drive> data | Daily evolution |
 | **Headless probe** | Host, no TUI | CI / CAPABILITY_AUDIT |
 | **Competition lean** | Linux binary + bundled jsonl, no body, no media | Kaggle / cloud |
 | **HF Space** | API wrapper, mind-only | Demo chat + small exams |
 
 ### Risks if we ignore this
 - Coupling identity/fitness to body TCP breaks demos when chassis offline (already soft-degraded).
-- Absolute Windows paths (`D:\training data`, `G:\`) fail on Linux — already partially mitigated by `FSOT_TRAINING_DATA` / `FSOT_BENCH_ROOT`.
+- Absolute Windows paths (`<local folder, not included in repo: training data>`, `<local drive>`) fail on Linux — already partially mitigated by `FSOT_TRAINING_DATA` / `FSOT_BENCH_ROOT`.
 - Multi-minute 500-tick probes exceed notebook limits — need `fsot-eval --ticks 50 --suites hellaswag`.
 
 ### Recommended next engineering (when you want)
@@ -87,7 +87,7 @@ So: **benchmarking SOTA does not require QEMU.** QEMU is a *body* / nerve path, 
 
 ---
 
-## Downloaded on D:\training data (2026-07-12)
+## Downloaded on <local folder, not included in repo: training data> (2026-07-12)
 
 | Pack | Path | N |
 |------|------|---|

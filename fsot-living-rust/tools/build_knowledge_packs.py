@@ -4,10 +4,10 @@ Build organism knowledge/*.jsonl packs from local corpora.
 
 Sources (when present):
   - Desktop Brain arxiv-metadata-oai-snapshot.json  (~5GB, JSONL)
-  - D:\\FSOT NeuroLab / linguistics FSOT markdown
-  - D:\\FSOT Micro LM data/phase3_qa.json
+  - $FSOT_LOCAL_DATA/FSOT NeuroLab / linguistics FSOT markdown
+  - $FSOT_LOCAL_DATA/FSOT Micro LM data/phase3_qa.json
   - Desktop Genetics codon maps / FSOT notes
-  - Optional: G:\\AI_Datasets when populated
+  - Optional: $FSOT_AI_DATASETS when populated
 
 Does NOT do LLM pretraining. Emits FactCard lines:
   {id, domain, claim, keys[], questions[], fsot_note?}
@@ -19,6 +19,18 @@ Usage:
 
 from __future__ import annotations
 
+import os as _os
+from pathlib import Path as _Path
+
+_REPO_ROOT = _Path(__file__).resolve().parents[2]
+
+
+def _fsot_local_path(env, default):
+    """Local path outside the repo: $env if set, else a path relative to the repo root."""
+    _v = _os.environ.get(env, "").strip()
+    return _Path(_v) if _v else _REPO_ROOT / default
+
+
 import argparse
 import json
 import re
@@ -29,23 +41,23 @@ ROOT = Path(__file__).resolve().parents[1]
 KNOW = ROOT / "organism_workspace" / "knowledge"
 
 # Prefer D: training data (primary external corpus root)
-TRAIN = Path(r"D:\training data")
+TRAIN = _fsot_local_path('FSOT_TRAINING_DATA', 'data_external/training_data')
 ARXIV_CANDIDATES = [
     TRAIN / "arxiv_dataset" / "arxiv-metadata-oai-snapshot.json",
     TRAIN / "arXiv Dataset" / "arxiv-metadata-oai-snapshot.json",
-    Path(r"C:\Users\damia\Desktop\Brain\arxiv-metadata-oai-snapshot.json"),
+    _fsot_local_path('FSOT_LOCAL_DATA', 'data_external/local') / 'Brain' / 'arxiv-metadata-oai-snapshot.json',
 ]
 ARXIV_FSOT_CORE = TRAIN / "arxiv_fsot_core.txt"
-NEUROLAB = Path(r"D:\FSOT NeuroLab")
-MICRO_QA = Path(r"D:\FSOT Micro LM\data\phase3_qa.json")
-LING_EN = Path(r"D:\FSOT linguistics\data\text_bulk\en.txt")
-GENETICS = Path(r"C:\Users\damia\Desktop\Genetics")
-KB_EXPORT = Path(r"D:\Knowledge base\export")
-BENCHMARKS = Path(r"D:\FSOT_Benchmarks")
+NEUROLAB = _fsot_local_path('FSOT_LOCAL_DATA', 'data_external/local') / 'FSOT NeuroLab'
+MICRO_QA = _fsot_local_path('FSOT_LOCAL_DATA', 'data_external/local') / 'FSOT Micro LM' / 'data' / 'phase3_qa.json'
+LING_EN = _fsot_local_path('FSOT_LOCAL_DATA', 'data_external/local') / 'FSOT linguistics' / 'data' / 'text_bulk' / 'en.txt'
+GENETICS = _fsot_local_path('FSOT_GENETICS_ROOT', '../FSOT-Genetics')
+KB_EXPORT = _fsot_local_path('FSOT_LOCAL_DATA', 'data_external/local') / 'Knowledge base' / 'export'
+BENCHMARKS = _fsot_local_path('FSOT_BENCHMARKS_ROOT', 'data_external/benchmarks')
 FSOT_LEAN_HINTS = [
-    Path(r"C:\Users\damia\Desktop\FSOT-2.1-Lean"),
-    Path(r"C:\Users\damia\Desktop\FSOT-2.1-Lean-main"),
-    Path(r"D:\FSOT-2.1-Lean-PublicData"),
+    _fsot_local_path('FSOT_2_1_LEAN_ROOT', '../FSOT-2.1-Lean'),
+    _fsot_local_path('FSOT_2_1_LEAN_ROOT', '../FSOT-2.1-Lean'),
+    _fsot_local_path('FSOT_LEAN_PUBLIC_DATA', 'data_external/lean_public_data'),
 ]
 
 
@@ -292,7 +304,7 @@ def pack_jsonl_qa(path: Path, domain: str, max_n: int, qkeys: tuple[str, ...], a
                     "claim": f"Q: {q} A: {a}"[:700],
                     "keys": keys_from_text(a, keys_from_text(q)[:3]),
                     "questions": [q[:200]],
-                    "fsot_note": f"From D:\\training data ({path.name}). Grounded exam card.",
+                    "fsot_note": f"From $FSOT_TRAINING_DATA ({path.name}). Grounded exam card.",
                 }
             )
     return cards
@@ -324,7 +336,7 @@ def pack_dolly_csv(path: Path, max_n: int = 2000) -> list[dict]:
                     "claim": claim[:700],
                     "keys": keys_from_text(resp, keys_from_text(inst)[:3]),
                     "questions": [inst[:200]],
-                    "fsot_note": "Dolly-15k style instruction card from D:\\training data\\nlp.",
+                    "fsot_note": "Dolly-15k style instruction card from $FSOT_TRAINING_DATA/nlp.",
                 }
             )
     return cards
@@ -359,7 +371,7 @@ def pack_arxiv_fsot_core(max_n: int = 3000) -> list[dict]:
                 "claim": f"{title}. {abs_[:450]}",
                 "keys": keys_from_text(title + " " + abs_[:150]),
                 "questions": [f"What is '{title[:70]}' about?", f"Summarize this {cat} paper."],
-                "fsot_note": "From D:\\training data\\arxiv_fsot_core.txt (FSOT-curated arXiv).",
+                "fsot_note": "From $FSOT_TRAINING_DATA/arxiv_fsot_core.txt (FSOT-curated arXiv).",
             }
         )
     return cards
@@ -393,7 +405,7 @@ def pack_squad(max_n: int = 1500) -> list[dict]:
                         "claim": f"Q: {q} A: {ans} (context: {context[:180]}…)",
                         "keys": keys_from_text(ans, keys_from_text(q)[:2]),
                         "questions": [q],
-                        "fsot_note": "SQuAD v1.1 from D:\\training data\\squad.",
+                        "fsot_note": "SQuAD v1.1 from $FSOT_TRAINING_DATA/squad.",
                     }
                 )
     return cards
@@ -424,7 +436,7 @@ def pack_kb_formulas(max_n: int = 2000) -> list[dict]:
                                     "claim": claim[:700],
                                     "keys": keys_from_text(claim),
                                     "questions": [f"Explain: {claim[:80]}"],
-                                    "fsot_note": "D:\\Knowledge base export.",
+                                    "fsot_note": "$FSOT_LOCAL_DATA/Knowledge base export.",
                                 }
                             )
                     for v in obj.values():
@@ -487,12 +499,12 @@ def main() -> int:
         arxiv = pack_arxiv(args.arxiv_max, cats_pref=[])
 
     neuro = pack_markdown_dir(NEUROLAB, "fsot_neurolab", 100)
-    ling_docs = pack_markdown_dir(Path(r"D:\FSOT linguistics"), "fsot_linguistics_docs", 40)
+    ling_docs = pack_markdown_dir(_fsot_local_path('FSOT_LOCAL_DATA', 'data_external/local') / 'FSOT linguistics', "fsot_linguistics_docs", 40)
     micro = pack_micro_qa()
     ling = pack_linguistics_sample(50)
     gen = pack_genetics()
 
-    # D:\training data — primary LLM-style corpora
+    # $FSOT_TRAINING_DATA — primary LLM-style corpora
     arxiv_core = pack_arxiv_fsot_core(3000)
     gsm8k = pack_jsonl_qa(
         TRAIN / "gsm8k" / "train.jsonl",
@@ -518,7 +530,7 @@ def main() -> int:
     dolly = pack_dolly_csv(TRAIN / "nlp" / "dolly-15k" / "dolly_15k.csv", 2500)
     squad = pack_squad(1500)
     kb = pack_kb_formulas(1500)
-    # Benchmarks mirror on D:\FSOT_Benchmarks
+    # Benchmarks mirror on $FSOT_BENCHMARKS_ROOT
     mbpp = pack_jsonl_qa(
         BENCHMARKS / "mbpp.jsonl",
         "mbpp_code",
@@ -557,10 +569,10 @@ def main() -> int:
             "total_cards": total,
             "packs": {k: len(v) for k, v in packs.items()},
             "notes": [
-                "PRIMARY corpus root: D:\\training data (MMLU, GSM8K, SQuAD, Dolly, HellaSwag, arXiv, genome, ...)",
-                "Also: D:\\FSOT_Benchmarks, D:\\Knowledge base\\export, D:\\FSOT NeuroLab/linguistics",
-                "G:\\AI_Datasets mostly empty zips — not primary",
-                "Model weights on D:\\Large language models originals (gguf) are NOT FactCards",
+                "PRIMARY corpus root: $FSOT_TRAINING_DATA (MMLU, GSM8K, SQuAD, Dolly, HellaSwag, arXiv, genome, ...)",
+                "Also: $FSOT_BENCHMARKS_ROOT, $FSOT_LOCAL_DATA/Knowledge base\\export, $FSOT_LOCAL_DATA/FSOT NeuroLab/linguistics",
+                "$FSOT_AI_DATASETS mostly empty zips — not primary",
+                "Model weights on $FSOT_LOCAL_DATA/Large language models originals (gguf) are NOT FactCards",
                 "Restart living TUI to load new jsonl packs into knowledge organ",
             ],
         }

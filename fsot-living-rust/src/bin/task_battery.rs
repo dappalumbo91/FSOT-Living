@@ -386,15 +386,15 @@ fn main() {
 /// Lightweight media discovery (no deep recursive crawl)
 fn scan_media_roots() -> Vec<String> {
     let candidates = [
-        r"G:\movies",
-        r"G:\showes",
-        r"G:\SteamLibrary",
-        r"D:\FSOT linguistics",
-        r"D:\FSOT NeuroLab",
-        r"C:\Users\damia\Desktop\Genetics",
-        r"C:\Users\damia\Music",
-        r"C:\Users\damia\Videos",
-        r"C:\Users\damia\Pictures",
+        r"../data_external/local/movies",
+        r"../data_external/local/showes",
+        r"../data_external/local/SteamLibrary",
+        r"../data_external/local/FSOT linguistics",
+        r"../data_external/local/FSOT NeuroLab",
+        r"../../FSOT-Genetics",
+        r"../data_external/local/Music",
+        r"../data_external/local/Videos",
+        r"../data_external/local/Pictures",
     ];
     let mut found = Vec::new();
     for c in candidates {

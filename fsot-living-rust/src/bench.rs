@@ -278,11 +278,9 @@ fn candidate_roots() -> Vec<PathBuf> {
         }
     }
     for p in [
-        r"D:\training data",
-        r"B:\training data",
-        r"G:\training data",
-        r"D:\FSOT_Benchmarks",
-        r"D:\FSOT. QWEN prototype\benchmark_suite\local",
+        r"../data_external/training_data",
+        r"../data_external/benchmarks",
+        r"../data_external/local/FSOT. QWEN prototype/benchmark_suite/local",
     ] {
         let pb = PathBuf::from(p);
         if pb.exists() && !roots.iter().any(|r| r == &pb) {
@@ -6077,7 +6075,7 @@ fn exam_bench_one_mode(
     force_zs: bool,
 ) -> String {
     if bank.items.is_empty() {
-        return "bench:empty (set FSOT_TRAINING_DATA or mount D:\\training data)".into();
+        return "bench:empty (set FSOT_TRAINING_DATA or mount $FSOT_TRAINING_DATA)".into();
     }
 
     // Organ online cue only — never invent free accuracy grades
