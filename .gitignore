@@ -60,3 +60,6 @@ fsot-living-v29*.json
 
 # ── Cargo lock optional keep (we keep Cargo.lock for apps) ──
 # Cargo.lock kept for binary crates
+
+# Local external data (see FSOT_* env vars); never committed
+data_external/

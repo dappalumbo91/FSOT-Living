@@ -1,6 +1,6 @@
 //! Audio energy organ — RMS / activity proxies from drive music under evolutionary pressure
 //!
-//! Sources: G:\Debut, G:\movies, G:\showes (+ workspace audio_lib synthetic WAV seeds).
+//! Sources: $FSOT_LOCAL_DATA/Debut, $FSOT_LOCAL_DATA/movies, $FSOT_LOCAL_DATA/showes (+ workspace audio_lib synthetic WAV seeds).
 //! Decode short windows via ffmpeg when available; pure-WAV path without it.
 //! Maps energy → FSOT regime hints (high energy ≈ emergence, low ≈ damping).
 
@@ -29,10 +29,10 @@ pub fn audio_library() -> PathBuf {
 
 pub fn media_roots() -> Vec<PathBuf> {
     [
-        r"G:\Debut",
-        r"G:\movies",
-        r"G:\showes",
-        r"C:\Users\damia\Music",
+        r"../data_external/local/Debut",
+        r"../data_external/local/movies",
+        r"../data_external/local/showes",
+        r"../data_external/local/Music",
     ]
     .iter()
     .map(PathBuf::from)

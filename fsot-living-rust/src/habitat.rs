@@ -152,7 +152,7 @@ impl Habitat {
             h.push(h.bench.summary_line());
         } else {
             h.push(
-                "bench: no external suites found — set FSOT_TRAINING_DATA or mount D:\\training data"
+                "bench: no external suites found — set FSOT_TRAINING_DATA or mount $FSOT_TRAINING_DATA"
                     .to_string(),
             );
         }
@@ -180,10 +180,10 @@ impl Habitat {
         ));
         // DRIVE_CURRICULUM — real media roots as structured teach seeds
         for (root, tag) in [
-            (r"G:\movies", "video_corpus"),
-            (r"G:\showes", "series_corpus"),
-            (r"G:\Debut", "debut_media"),
-            (r"G:\AI_Datasets", "ai_datasets"),
+            (r"../data_external/local/movies", "video_corpus"),
+            (r"../data_external/local/showes", "series_corpus"),
+            (r"../data_external/local/Debut", "debut_media"),
+            (r"../data_external/ai_datasets", "ai_datasets"),
         ] {
             if std::path::Path::new(root).exists() {
                 h.curriculum.push((

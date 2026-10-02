@@ -403,10 +403,10 @@ pub fn write_live(h: &Habitat) -> std::io::Result<PathBuf> {
             lineage_tracking: true,
             live_json_export: true,
             notes: vec![
-                "Audio energy organ: G:\\Debut/movies/showes via ffmpeg RMS → FSOT regime".into(),
+                "Audio energy organ: $FSOT_LOCAL_DATA/Debut/movies/showes via ffmpeg RMS → FSOT regime".into(),
                 "Video drive pressure: frame sample → vision features + temporal hint".into(),
                 "JS organ: tools_js forge (clamp/double/add/fsot_sign) + challenges".into(),
-                "Knowledge packs from D:\\training data (exam-backed FactCards)".into(),
+                "Knowledge packs from $FSOT_TRAINING_DATA (exam-backed FactCards)".into(),
                 "LLM-capability bridge: MMLU·GSM8K·HellaSwag·TruthfulQA·MBPP → organs (CAPABILITY_AUDIT.json)".into(),
                 "Plastic language + pack + code L2 + proposals (never auto-Rust)".into(),
                 "Trinary body chassis: BODY_STATUS.json / BODY_MOTOR.txt Mind ABI (fsot-trinary-body)".into(),
