@@ -1,5 +1,7 @@
 # FSOT Living
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 **Flagship living AI — Fluid Spacetime Omni-Theory, embodied as genetic biological intelligence.**
 
 **Author:** Damian Arthur Palumbo  
